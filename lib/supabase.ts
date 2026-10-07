@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { notFound } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -16,3 +18,10 @@ export async function db() {
     },
   });
 }
+
+export const ctx = cache(async (org: string) => {
+  const supabase = await db();
+  const { data: role } = await supabase.rpc("role_in", { org });
+  if (!role) notFound();
+  return { supabase, role: role as Role, staff: role !== "creator" };
+});
